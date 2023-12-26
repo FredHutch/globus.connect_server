@@ -1,73 +1,90 @@
-from ansible.module_utils.basic import AnsibleModule
 import globus_sdk
-from globus_sdk import GlobusError
-from globus_sdk.services.auth.errors import AuthAPIError
 
-import ansible_collections.nesi.globus.plugins.module_utils.globus_util as globus_util # type: ignore
+from ansible.module_utils.basic import AnsibleModule
 
-import os
+import ansible_collections.nesi.globus.plugins.module_utils.gcs_util as gcs_util # type: ignore
+from ansible_collections.nesi.globus.plugins.module_utils.gcs_util import Action # type: ignore
 
-class EndpointModule(globus_util.GCSModule):
-
-    def __init__(self):
-        super().__init__()
-        self.module.params["id"] = self.module.params["endpoint_id"]
-
-    def object_spec(self):
-        return dict(
-            display_name = dict(type='str', required=False),
-            organization = dict(type='str', required=False),
-            department = dict(type='str', required=False),
-            contact_email = dict(type='str', required=False),
-            contact_info = dict(type='str', required=False),
-            description = dict(type='str', required=False),
-            subscription_id = dict(type='str', required=False),
-            keywords = dict(type='list', required=False),
-            max_concurrency = dict(type='int', required=False),
-            max_parallelism = dict(type='int', required=False),
-            preferred_concurrency = dict(type='int', required=False),
-            preferred_parallelism = dict(type='int', required=False),
-            public = dict(type='bool', required=False),
-            allow_udt = dict(type='bool', required=False),
-            network_use = dict(type='str', 
-                            choices = ["normal", 
-                                        "aggressive",
-                                        "minimal",
-                                        "custom"],
-                                required=False),
-            gridftp_control_channel_port = dict(type='int', 
-                                                required = False)
-        )
-
-    def create(self, new):
-        id = self.module.params["id"]
-        msg = (
-            f"Endpoint with id {id} does not exist. "
-            "This module doesn't know how to create new endpoints"
-        )
-        raise NotImplementedError(msg)
-
-    def update(self, new):
-        return self.gcs_client.patch("endpoint", 
-                        encoding = "json", 
-                        data = new).data
-
-    def delete(self):
-        msg = "This module doesn't know how to delete endpoints"
-        raise NotImplementedError(msg)        
-
-    def old_state(self):
-        return self.gcs_client.get("endpoint").data["data"][0]
-
-    def data_type(self):
-        return "endpoint#1.2.0"
+def endpoint_spec():
+    return dict(
+        display_name = dict(type='str', required=False),
+        organization = dict(type='str', required=False),
+        department = dict(type='str', required=False),
+        contact_email = dict(type='str', required=False),
+        contact_info = dict(type='str', required=False),
+        description = dict(type='str', required=False),
+        subscription_id = dict(type='str', required=False),
+        keywords = dict(type='list', required=False),
+        max_concurrency = dict(type='int', required=False),
+        max_parallelism = dict(type='int', required=False),
+        preferred_concurrency = dict(type='int', required=False),
+        preferred_parallelism = dict(type='int', required=False),
+        public = dict(type='bool', required=False),
+        allow_udt = dict(type='bool', required=False),
+        network_use = dict(type='str', 
+                        choices = ["normal", 
+                                    "aggressive",
+                                    "minimal",
+                                    "custom"],
+                            required=False),
+        gridftp_control_channel_port = dict(type='int', 
+                                            required = False)
+    )
 
 def main():
     try:
-        module = EndpointModule()
-        module.execute()
-    except GlobusError as e:
+        spec = gcs_util.common_spec() | endpoint_spec()
+        module = AnsibleModule(argument_spec= spec,
+                                    supports_check_mode=True)
+        gcs_client = gcs_util.create_gcs_client(module)
+
+        id = module.params["endpoint_id"]
+        actual = get_endpoint_data(gcs_client)
+
+        state = module.params["state"]
+        if state == "absent":
+            desired = None
+        else:
+            desired = gcs_util.read_keys(
+                endpoint_spec().keys(), 
+                module
+                )
+
+        def nothing():
+            module.exit_json(changed = False, data = actual)
+        
+        def delete():
+            module.fail_json(
+                msg = "endpoint deletion not supported"
+                )
+
+        def create():
+            module.fail_json(
+                msg = "endpoint creation not supported"
+                )
+
+        def update():
+            desired["DATA_TYPE"] = "endpoint#1.2.0"
+            gcs_client.patch("endpoint", 
+                        encoding = "json", 
+                        data = desired)
+            data = get_endpoint_data(gcs_client)
+            module.exit_json(changed = True, data = data)
+
+        action_table = {Action.NOTHING: nothing,
+                        Action.DELETE:  delete,
+                        Action.UPDATE:  update,
+                        Action.CREATE:  create}      
+        
+        action_table[gcs_util.plan(desired, actual)]()
+
+    except globus_sdk.GlobusError as e:
         module.fail(msg = str(e))
+
+
+@gcs_util.none_if_not_found
+def get_endpoint_data(gcs_client):
+    return gcs_client.get("endpoint").data["data"][0]
 
 if __name__ == '__main__':
     main()
