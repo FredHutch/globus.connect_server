@@ -8,12 +8,6 @@ class Action(Enum):
     UPDATE  = 2
     DELETE =  3
 
-def is_changed(old, new):
-    for k in new.keys():
-        if (k not in old) or (old[k] != new[k]):
-            return True
-    return False
-
 def plan(desired, actual):
     if desired is None:
         if actual is None:
@@ -28,6 +22,12 @@ def plan(desired, actual):
         return Action.UPDATE
     
     return Action.NOTHING
+
+def is_changed(old, new):
+    for k in new.keys():
+        if (k not in old) or (old[k] != new[k]):
+            return True
+    return False
 
 def get_connector_id(id):
     connector_dict = {

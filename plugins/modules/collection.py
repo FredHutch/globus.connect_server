@@ -52,8 +52,8 @@ def collection_spec():
 def main():
     try:
         spec = gcs_util.common_spec() | collection_spec()
-        module = AnsibleModule(argument_spec= spec,
-                                    supports_check_mode=True)
+        module = AnsibleModule(argument_spec = spec,
+                                    supports_check_mode = True)
         gcs_client = gcs_util.create_gcs_client(module)
 
         id = module.params["id"]
