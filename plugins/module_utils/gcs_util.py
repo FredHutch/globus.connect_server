@@ -67,6 +67,32 @@ def collection_spec():
         user_message_link = dict(type='str', required=False),
     )
 
+def endpoint_spec():
+    return dict(
+        display_name = dict(type='str', required=False),
+        organization = dict(type='str', required=False),
+        department = dict(type='str', required=False),
+        contact_email = dict(type='str', required=False),
+        contact_info = dict(type='str', required=False),
+        description = dict(type='str', required=False),
+        subscription_id = dict(type='str', required=False),
+        keywords = dict(type='list', required=False),
+        max_concurrency = dict(type='int', required=False),
+        max_parallelism = dict(type='int', required=False),
+        preferred_concurrency = dict(type='int', required=False),
+        preferred_parallelism = dict(type='int', required=False),
+        public = dict(type='bool', required=False),
+        allow_udt = dict(type='bool', required=False),
+        network_use = dict(type='str', 
+                        choices = ["normal", 
+                                    "aggressive",
+                                    "minimal",
+                                    "custom"],
+                            required=False),
+        gridftp_control_channel_port = dict(type='int', 
+                                            required = False)
+    )
+
 
 class Action(Enum):
     NOTHING = 0

@@ -5,35 +5,10 @@ from ansible.module_utils.basic import AnsibleModule
 import ansible_collections.nesi.globus.plugins.module_utils.gcs_util as gcs_util # type: ignore
 from ansible_collections.nesi.globus.plugins.module_utils.gcs_util import Action # type: ignore
 
-def endpoint_spec():
-    return dict(
-        display_name = dict(type='str', required=False),
-        organization = dict(type='str', required=False),
-        department = dict(type='str', required=False),
-        contact_email = dict(type='str', required=False),
-        contact_info = dict(type='str', required=False),
-        description = dict(type='str', required=False),
-        subscription_id = dict(type='str', required=False),
-        keywords = dict(type='list', required=False),
-        max_concurrency = dict(type='int', required=False),
-        max_parallelism = dict(type='int', required=False),
-        preferred_concurrency = dict(type='int', required=False),
-        preferred_parallelism = dict(type='int', required=False),
-        public = dict(type='bool', required=False),
-        allow_udt = dict(type='bool', required=False),
-        network_use = dict(type='str', 
-                        choices = ["normal", 
-                                    "aggressive",
-                                    "minimal",
-                                    "custom"],
-                            required=False),
-        gridftp_control_channel_port = dict(type='int', 
-                                            required = False)
-    )
-
 def main():
     try:
-        spec = gcs_util.common_spec() | endpoint_spec()
+        spec = gcs_util.common_spec() \
+            | gcs_util.endpoint_spec()
         module = AnsibleModule(argument_spec= spec,
                                     supports_check_mode=True)
         gcs_client = gcs_util.create_gcs_client(module)
@@ -46,7 +21,7 @@ def main():
             desired = None
         else:
             desired = gcs_util.read_keys(
-                endpoint_spec().keys(), 
+                gcs_util.endpoint_spec().keys(), 
                 module
                 )
 
