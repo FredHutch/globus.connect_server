@@ -5,32 +5,12 @@ from ansible.module_utils.basic import AnsibleModule
 import ansible_collections.nesi.globus.plugins.module_utils.gcs_util as gcs_util # type: ignore
 from ansible_collections.nesi.globus.plugins.module_utils.gcs_util import Action # type: ignore
 
-def storage_gateway_spec():
-    return dict(
-        admin_managed_credentials = dict(type='bool',
-                                        required=False),
-        allowed_domains = dict(type='list', required = False),
-        authentication_timeout_mins = dict(type='int', 
-                                        required = False),
-        connector_id = dict(type = gcs_util.get_connector_id,
-                            required=False),
-        display_name = dict(type='str', required=False),
-        high_assurance = dict(type='bool', required=False),
-        identity_mappings = dict(type='list', required=False),
-        load_dsi_module = dict(type='string', required=False),
-        policies = dict(type='dict', required=False),
-        process_user = dict(type='string', required=False),
-        require_mfa = dict(type='bool', required=False),
-        restrict_paths = dict(type='dict', required=False),
-        users_allow = dict(type='list', required=False),
-        users_deny = dict(type='list', required=False)
-    )
-
 def main():
     try:
-        spec = gcs_util.common_spec() | storage_gateway_spec()
-        module = AnsibleModule(argument_spec= spec,
-                                    supports_check_mode=True)
+        spec = gcs_util.common_spec() \
+            | gcs_util.storage_gateway_spec()
+        module = AnsibleModule(argument_spec = spec,
+                                    supports_check_mode = True)
         gcs_client = gcs_util.create_gcs_client(module)
 
         id = module.params["id"]
@@ -44,7 +24,7 @@ def main():
             desired = None
         else:
             desired = gcs_util.read_keys(
-                storage_gateway_spec().keys(), 
+                gcs_util.storage_gateway_spec().keys(), 
                 module
                 )
 

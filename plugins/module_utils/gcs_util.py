@@ -2,6 +2,72 @@ import globus_sdk
 
 from enum import Enum
 
+def storage_gateway_spec():
+    return dict(
+        admin_managed_credentials = dict(type='bool',
+                                        required=False),
+        allowed_domains = dict(type='list', required = False),
+        authentication_timeout_mins = dict(type='int', 
+                                        required = False),
+        connector_id = dict(type = get_connector_id,
+                            required=False),
+        display_name = dict(type='str', required=False),
+        high_assurance = dict(type='bool', required=False),
+        identity_mappings = dict(type='list', required=False),
+        load_dsi_module = dict(type='string', required=False),
+        policies = dict(type='dict', required=False),
+        process_user = dict(type='string', required=False),
+        require_mfa = dict(type='bool', required=False),
+        restrict_paths = dict(type='dict', required=False),
+        users_allow = dict(type='list', required=False),
+        users_deny = dict(type='list', required=False)
+    )
+
+def collection_spec():
+    return dict(
+        allow_guest_collections = dict(type='bool', 
+                                    required=False),
+        authentication_timeout_mins = dict(type = 'int',
+                                        required = False),
+        collection_base_path = dict(type = 'str', required = False),
+        collection_type = dict(type = 'str', 
+                            choices = ["mapped", "guest"],
+                            required = True),
+        connector_id = dict(type = get_connector_id,
+                            required=False),
+        contact_email = dict(type = 'str', required = False),
+        contact_info = dict(type = 'str', required = False),
+        default_directory = dict(type = 'str', required = False),
+        delete_protected = dict(type = 'bool', required = False),
+        department = dict(type = 'str', required = False),
+        disable_anonymous_writes = dict(type = 'bool', 
+                                        required = False),
+        disable_verify = dict(type = 'bool', required = False),
+        display_name = dict(type = 'str', required = False),
+        domain_name = dict(type = 'str', required = False),
+        enable_https = dict(type = 'bool', required = False),
+        force_encryption = dict(type = 'bool', required = False),
+        force_verify = dict(type = 'bool', required = False),
+        guest_auth_policy_id = dict(type = 'str', required = False),
+        high_assurance = dict(type = 'bool', required = False),
+        info_link = dict(type = 'str', required = False),
+        keywords = dict(type='list', required=False),
+        mapped_collection_id = dict(type = 'str', required = False),
+        organization = dict(type = 'str', required = False),
+        policies = dict(type='dict', required=False),
+        public = dict(type = 'bool', required = False),
+        require_mfa = dict(type = 'bool', required = False),
+        root_path = dict(type = 'str', required = False),
+        sharing_restrict_paths = dict(type='dict', required=False),
+        sharing_users_allow = dict(type='list', required=False),
+        sharing_users_deny = dict(type='list', required=False),
+        storage_gateway_id = dict(type='str', required=False),
+        user_credential_id = dict(type='str', required=False),
+        user_message = dict(type='str', required=False),
+        user_message_link = dict(type='str', required=False),
+    )
+
+
 class Action(Enum):
     NOTHING = 0
     CREATE  = 1

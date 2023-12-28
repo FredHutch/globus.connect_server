@@ -55,5 +55,7 @@ action_groups:
   gcs:
     - endpoint
     - storage_gateway
+    - storage_gateway_info
     - collection
+    - collection_info
 

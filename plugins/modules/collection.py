@@ -5,53 +5,10 @@ from ansible.module_utils.basic import AnsibleModule
 import ansible_collections.nesi.globus.plugins.module_utils.gcs_util as gcs_util # type: ignore
 from ansible_collections.nesi.globus.plugins.module_utils.gcs_util import Action # type: ignore
 
-def collection_spec():
-    return dict(
-        allow_guest_collections = dict(type='bool', 
-                                    required=False),
-        authentication_timeout_mins = dict(type = 'int',
-                                        required = False),
-        collection_base_path = dict(type = 'str', required = False),
-        collection_type = dict(type = 'str', 
-                            choices = ["mapped", "guest"],
-                            required = True),
-        connector_id = dict(type = gcs_util.get_connector_id,
-                            required=False),
-        contact_email = dict(type = 'str', required = False),
-        contact_info = dict(type = 'str', required = False),
-        default_directory = dict(type = 'str', required = False),
-        delete_protected = dict(type = 'bool', required = False),
-        department = dict(type = 'str', required = False),
-        disable_anonymous_writes = dict(type = 'bool', 
-                                        required = False),
-        disable_verify = dict(type = 'bool', required = False),
-        display_name = dict(type = 'str', required = False),
-        domain_name = dict(type = 'str', required = False),
-        enable_https = dict(type = 'bool', required = False),
-        force_encryption = dict(type = 'bool', required = False),
-        force_verify = dict(type = 'bool', required = False),
-        guest_auth_policy_id = dict(type = 'str', required = False),
-        high_assurance = dict(type = 'bool', required = False),
-        info_link = dict(type = 'str', required = False),
-        keywords = dict(type='list', required=False),
-        mapped_collection_id = dict(type = 'str', required = False),
-        organization = dict(type = 'str', required = False),
-        policies = dict(type='dict', required=False),
-        public = dict(type = 'bool', required = False),
-        require_mfa = dict(type = 'bool', required = False),
-        root_path = dict(type = 'str', required = False),
-        sharing_restrict_paths = dict(type='dict', required=False),
-        sharing_users_allow = dict(type='list', required=False),
-        sharing_users_deny = dict(type='list', required=False),
-        storage_gateway_id = dict(type='str', required=False),
-        user_credential_id = dict(type='str', required=False),
-        user_message = dict(type='str', required=False),
-        user_message_link = dict(type='str', required=False),
-    )
-
 def main():
     try:
-        spec = gcs_util.common_spec() | collection_spec()
+        spec = gcs_util.common_spec() \
+            | gcs_util.collection_spec()
         module = AnsibleModule(argument_spec = spec,
                                     supports_check_mode = True)
         gcs_client = gcs_util.create_gcs_client(module)
@@ -67,7 +24,7 @@ def main():
             desired = None
         else:
             desired = gcs_util.read_keys(
-                collection_spec().keys(), 
+                gcs_util.collection_spec().keys(), 
                 module
                 )
             
