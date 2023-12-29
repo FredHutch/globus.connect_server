@@ -5,15 +5,16 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.nesi.globus.plugins.module_utils import gcs_util # pylint: disable=import-error
 
 def main():
+    '''storage_gateway_info ansible module implementation'''
     spec = gcs_util.common_spec() \
         | gcs_util.storage_gateway_spec()
     del spec["state"]
     module = AnsibleModule(argument_spec= spec,
                                 supports_check_mode=True)
     try:
+        keys = list(gcs_util.storage_gateway_spec().keys())
         filter_ = gcs_util.read_keys(
-                    list(gcs_util.storage_gateway_spec().keys()) \
-                        + ["id"],
+                    keys + ["id"],
                     module
                   )
         gcs_client = gcs_util.create_gcs_client(module)

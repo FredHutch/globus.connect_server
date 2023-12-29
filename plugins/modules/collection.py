@@ -6,6 +6,7 @@ from ansible_collections.nesi.globus.plugins.module_utils import gcs_util # pyli
 from ansible_collections.nesi.globus.plugins.module_utils.gcs_util import Action # pylint: disable=import-error
 
 def main():
+    '''collection ansible module implementation '''
     spec = gcs_util.common_spec() \
         | gcs_util.collection_spec()
     module = AnsibleModule(argument_spec = spec,
@@ -13,18 +14,27 @@ def main():
     try:
         gcs_client = gcs_util.create_gcs_client(module)
 
+        @gcs_util.none_if_not_found
+        def get_collection_data(id_):
+            return gcs_client.get_collection(
+                id_,
+                query_params = {
+                    "include": "private_policies"
+                    }
+                ).data
+
         id_ = module.params["id"]
         if id_ is None:
             actual = None
         else:
-            actual = get_collection_data(gcs_client, id_)
+            actual = get_collection_data(id_)
 
         state = module.params["state"]
         if state == "absent":
             desired = None
         else:
             desired = gcs_util.read_keys(
-                gcs_util.collection_spec().keys(), 
+                gcs_util.collection_spec().keys(),
                 module
                 )
 
@@ -43,7 +53,7 @@ def main():
         def update():
             desired["DATA_TYPE"] = "collection#1.9.0"
             gcs_client.update_collection(id_, desired)
-            data = get_collection_data(gcs_client, id_)
+            data = get_collection_data(id_)
             module.exit_json(changed = True, data = data)
 
         action_table = {Action.NOTHING: nothing,
@@ -55,15 +65,6 @@ def main():
 
     except globus_sdk.GlobusError as ex:
         module.fail_json(msg = str(ex))
-
-@gcs_util.none_if_not_found
-def get_collection_data(gcs_client, id):
-    return gcs_client.get_collection(
-        id,
-        query_params = {
-            "include": "private_policies"
-            }
-        ).data
 
 if __name__ == '__main__':
     main()

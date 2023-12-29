@@ -10,14 +10,16 @@ def main():
     '''endpoint module implementation '''
     spec = gcs_util.common_spec() \
             | gcs_util.endpoint_spec()
-    module = AnsibleModule(argument_spec= spec,
-                                    supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec = spec,
+        supports_check_mode = True
+        )
     try:
-        spec = gcs_util.common_spec() \
-            | gcs_util.endpoint_spec()
-        module = AnsibleModule(argument_spec= spec,
-                                    supports_check_mode=True)
         gcs_client = gcs_util.create_gcs_client(module)
+
+        @gcs_util.none_if_not_found
+        def get_endpoint_data(gcs_client):
+            return gcs_client.get("endpoint").data["data"][0]
 
         actual = get_endpoint_data(gcs_client)
 
@@ -60,10 +62,6 @@ def main():
 
     except globus_sdk.GlobusError as ex:
         module.fail_json(msg = str(ex))
-
-@gcs_util.none_if_not_found
-def get_endpoint_data(gcs_client):
-    return gcs_client.get("endpoint").data["data"][0]
 
 if __name__ == '__main__':
     main()
