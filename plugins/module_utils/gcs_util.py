@@ -1,6 +1,8 @@
+'''shared utility functions for GCS ansible modules.'''
+from enum import Enum
+
 import globus_sdk
 
-from enum import Enum
 
 def storage_gateway_spec():
     return dict(
@@ -106,13 +108,13 @@ def plan(desired, actual):
             return Action.NOTHING
         else:
             return Action.DELETE
-    
+
     if actual is None:
         return Action.CREATE
-    
+
     if is_changed(actual, desired):
         return Action.UPDATE
-    
+
     return Action.NOTHING
 
 def is_changed(old, new):
@@ -165,7 +167,7 @@ def create_gcs_client(module):
                 endpoint_id = i["endpoint_id"]
                 module.params["endpoint_id"] = endpoint_id
                 break
-    
+
     client = globus_sdk.ConfidentialAppAuthClient(client_id, client_secret)
     scope_builder = globus_sdk.GCSClient.get_gcs_endpoint_scopes(endpoint_id)
     scopes = scope_builder.manage_collections
@@ -184,7 +186,9 @@ def read_keys(keys, module):
 
 # convert 404 status code to None
 def none_if_not_found(f):
-
+    '''globus sdk functions raise exceptions on 404 status code.
+       This decorator makes it return None instead.
+    '''
     def g(*args, **kwargs):
         try:
             return f(*args, **kwargs)
